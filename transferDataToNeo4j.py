@@ -3,59 +3,84 @@
 
 
 from optparse import OptionParser
-usage="show something usefull -- for example: how to use this program"
+usage='''Welcome! This .py is used to transfer three data files to the Neo4j graph databases.
+Please change the userName and passWord for Neo4j before use this program
+Please use "transferDataToNeo4j.py -h" to see some helps. Any question furthermore, please ask it in issue on GitHub.
+'''
 parser = OptionParser(usage) #带参的话会把参数变量的内容作为帮助信息输出
 parser.add_option("-e","--entities_file",dest="entities_file",default='entities.csv',action = "store",type="string")
 parser.add_option("-r","--relations_file",dest="relations_file",default='relations.txt',action = "store",type="string")
 parser.add_option("-p","--properties_file",dest="properties_file",default='properties.txt',action = "store",type="string")
 parser.add_option("-d","--deleteAllFlag",dest="deleteAllFlag",default = 1, type='int')
 parser.add_option("-m","--demoFlag",dest="demoFlag",default = 1, type='int')
+parser.add_option("-u","--userName",dest="userName",default = 'neo4j', type='string')
+parser.add_option("-w","--passWord",dest="passWord",default = '123123', type='string')
 (options,args)=parser.parse_args()
-#print(options.entities_file)
-#if options.deleteAllFlag == 1:
-#    print("True")
-#else:
-#    print("False")
-#print(options.deleteAllFlag)
+option_entities_file = options.entities_file
+option_relations_file = options.relations_file
+option_properties_file = options.properties_file
+option_deleteAllFlag = options.deleteAllFlag
+option_demoFlag = options.demoFlag
+option_userName = options.userName
+option_passWord = options.passWord
 
 
-# In[1]:
+
+# In[3]:
 
 
 import pandas as pd
 import numpy as np
 import os
+from tqdm import tqdm
 
 
-# In[2]:
+# In[4]:
 
 
 from py2neo import Graph,Node,Relationship
-graph = Graph('http://localhost:7474',username='neo4j',password='123123')
+graph = Graph('http://localhost:7474',username=option_userName,password=option_passWord)
 
 
-# In[19]:
+# In[5]:
 
 
-df = pd.read_csv(options.entities_file,sep=';',encoding='utf-16')
+df = pd.read_csv(option_entities_file,sep=';',encoding='utf-16')
 # print(df.shape)
 # print(df.columns.values)
-# df.head()
+df.head()
 
 
-# In[20]:
+# In[6]:
 
 
-demoFlag = options.demoFlag
-if demoFlag == 1:
-    df = df.iloc[[3,4,570]]
-    df['机型'][4] = df['机型'][3]
+if option_demoFlag == 1:
+    df = df.iloc[[3,4,568,570]]
+    tmp = df['机型'][3] 
+    df.loc[4,'机型'] = tmp
+    df.loc[568,'机型'] = tmp
+    df.loc[570,'机型'] = tmp
+elif option_demoFlag == 2:
+    df = df.iloc[[3,4,580]]
+    tmp = df['机型'][3] 
+    df.loc[4,'机型'] = tmp
+    df.loc[580,'故障原因'] = df.loc[3,'故障原因']
+    df.loc[580,'故障现象'] = df.loc[3,'故障现象']
+    df.loc[580,'故障代码'] = df.loc[3,'故障代码']
+elif option_demoFlag == 10:
+    df = df.iloc[545:590]
 
 
-# In[9]:
+# In[7]:
 
 
-def getPropertiesFromFile(file_path=options.properties_file):
+df
+
+
+# In[8]:
+
+
+def getPropertiesFromFile(file_path=option_properties_file):
     schema_prop = {}
     file = open(file_path)
     for s in file.readlines():
@@ -79,7 +104,7 @@ schema_prop, notGoodKey = getPropertiesFromFile()
 schema_prop
 
 
-# In[6]:
+# In[9]:
 
 
 def getRelationFromString(s):
@@ -98,10 +123,10 @@ s = "故障原因，对应，故障代码,label:LabelTest1,name:NameTest2"
 getRelationFromString(s)
 
 
-# In[7]:
+# In[10]:
 
 
-def getRelationsFromFile(file_path = options.relations_file):
+def getRelationsFromFile(file_path = option_relations_file):
     relations = []
     rela_file = open(file_path)
     # print(rela_file.readlines())
@@ -116,23 +141,29 @@ schema_relations= getRelationsFromFile()
 schema_relations
 
 
-# In[22]:
+# In[11]:
 
 
-deleteAllFlag = options.deleteAllFlag
-if deleteAllFlag == 1:
+# aNode = Node("编号",label="实例节点",小时='test')
+# graph.create(aNode)
+
+
+# In[12]:
+
+
+if option_deleteAllFlag == 1:
     graph.delete_all()
 
 goodKeyNode = {}
-for key in list(df.columns.values):
+for key in tqdm(list(df.columns.values)):
     if key in notGoodKey:
         continue
     goodKeyNode[key] = Node(key,label="概念节点",value=key)
     graph.create(goodKeyNode[key])
-    if demoFlag == 1:
+    if option_demoFlag >= 1 and option_demoFlag < 10:
         break
-for i_index in df.index:
-    print(i_index)
+for i_index in tqdm(list(df.index)):
+#     print(i_index)
     key_to_node = {}
     for key in list(df.columns.values):
 #         print(key)
