@@ -4,17 +4,17 @@
 
 from optparse import OptionParser
 usage='''Welcome! This .py is used to transfer three data files to the Neo4j graph databases.
-Please change the userName and passWord for Neo4j before use this program
-Please use "transferDataToNeo4j.py -h" to see some helps. Any question furthermore, please ask it in issue on GitHub.
+Please change the userName and passWord for Neo4j before using this program.
+Please use "python transferDataToNeo4j.py -h" to see some helps.
 '''
 parser = OptionParser(usage) #带参的话会把参数变量的内容作为帮助信息输出
-parser.add_option("-e","--entities_file",dest="entities_file",default='entities.csv',action = "store",type="string")
-parser.add_option("-r","--relations_file",dest="relations_file",default='relations.txt',action = "store",type="string")
-parser.add_option("-p","--properties_file",dest="properties_file",default='properties.txt',action = "store",type="string")
-parser.add_option("-d","--deleteAllFlag",dest="deleteAllFlag",default = 1, type='int')
-parser.add_option("-m","--demoFlag",dest="demoFlag",default = 1, type='int')
-parser.add_option("-u","--userName",dest="userName",default = 'neo4j', type='string')
-parser.add_option("-w","--passWord",dest="passWord",default = '123123', type='string')
+parser.add_option("-e","--entities_file",dest="entities_file",default='entities.csv',action = "store",type="string",help='This is a specific file for Tianyuan project, whose content is .csv and looks like a excel-book.')
+parser.add_option("-r","--relations_file",dest="relations_file",default='relations.txt',action = "store",type="string",help='The format is [key1,relation_type,key2{,prop_key:prop_val}*]')
+parser.add_option("-p","--properties_file",dest="properties_file",default='properties.txt',action = "store",type="string",help='The format is [key1,key2{,key3}*], which means that the key1 is the main key while others are key1\'s properties.')
+parser.add_option("-d","--deleteAllFlag",dest="deleteAllFlag",default = 1, type='int',help='if it is 1(default), the neo4j database will be deleted ')
+parser.add_option("-m","--demoFlag",dest="demoFlag",default = 1, type='int',help='If it is 0, it is not demo and will have all entities. If it is 1 or 2 or 10, it would be different demos.')
+parser.add_option("-u","--userName",dest="userName",default = 'neo4j', type='string',help='the username for the Neo4j')
+parser.add_option("-w","--passWord",dest="passWord",default = '123123', type='string',help='the password for the Neo4j')
 (options,args)=parser.parse_args()
 option_entities_file = options.entities_file
 option_relations_file = options.relations_file
